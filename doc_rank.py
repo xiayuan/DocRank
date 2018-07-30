@@ -98,7 +98,7 @@ class DoctorRanking(object):
         for doc, entity_score_list in self.doc_content_score.items():
             # print doc
             entity_scores = sorted(entity_score_list.items(), key=lambda d:d[1], reverse=True)
-            for e in entity_scores[0:topk]:
+            for e in entity_scores[0:1]:
                 self.doc_rank[doc] = e[1]
                 # print doc, e[0], e[1]
 
@@ -106,7 +106,7 @@ class DoctorRanking(object):
 
         # return the doctor info
         try:
-            self.doc_name = doc_rank_list[0][0]
+            self.doc_name = doc_rank_list[topk][0]
             self.doc_info = self.doc_info_dict[self.doc_name]
             self.doc_class = department
         except Exception as e:
