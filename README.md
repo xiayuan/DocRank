@@ -1,3 +1,3 @@
 # DocRank
 DocRank 
-Rank Doctor Info with Word2Vec
+Rank Doctor Info with Word2vec
