@@ -106,7 +106,7 @@ class DoctorRanking(object):
 
         # return the doctor info
         try:
-            self.doc_name = doc_rank_list[topk][0]
+            self.doc_name = doc_rank_list[topk-1][0]
             self.doc_info = self.doc_info_dict[self.doc_name]
             self.doc_class = department
         except Exception as e:
