@@ -59,23 +59,29 @@ class DoctorRanking(object):
         self.class_doc = defaultdict(list)
         self.doc_content = defaultdict(list)
         self.doc_content_score = defaultdict(dict)
-        self.doc_rank = defaultdict(float)
+        self.doc_rank = defaultdict(tuple)
+        self.doc_title = defaultdict(int)
 
         self.doc_name = ""
         self.doc_info = ""
         self.doc_class = ""
+        self.doc_title_no = 99
 
         self.TOPK = 1
         self.rankDocList = []
 
-        with open('./doc_dep_info_all.txt', 'r') as f:
+        with open('./doc_dep_info_all_new.txt', 'r') as f:
             for line in f:
-                doc, dep, info, intro = line.strip().split('\t')
-                self.doc_class_dict[doc] = dep
-                self.doc_info_dict[doc] = info
-                self.class_doc[dep].append(doc)
-                intro_list = intro.strip().split(' ')
-                self.doc_content[doc] = intro_list
+                try:
+                    doc, title_no, dep, info, intro = line.strip().split('\t')
+                    self.doc_class_dict[doc] = dep
+                    self.doc_info_dict[doc] = info
+                    self.doc_title[doc] = title_no
+                    self.class_doc[dep].append(doc)
+                    intro_list = intro.strip().split(' ')
+                    self.doc_content[doc] = intro_list
+                except:
+                    print line
 
     def rank(self, dis, department, topk=1):
         """
@@ -99,20 +105,21 @@ class DoctorRanking(object):
             # print doc
             entity_scores = sorted(entity_score_list.items(), key=lambda d:d[1], reverse=True)
             for e in entity_scores[0:1]:
-                self.doc_rank[doc] = e[1]
+                self.doc_rank[doc] = (e[1], int(self.doc_title[doc]))
                 # print doc, e[0], e[1]
 
-        doc_rank_list = sorted(self.doc_rank.items(), key=lambda d:d[1], reverse=True)
+        doc_rank_list = sorted(self.doc_rank.items(), key=lambda d: (d[1][0], -d[1][1]), reverse=True)
 
         # return the doctor info
         try:
             self.doc_name = doc_rank_list[topk-1][0]
             self.doc_info = self.doc_info_dict[self.doc_name]
             self.doc_class = department
+            self.doc_title_no = self.doc_title[self.doc_name]
         except Exception as e:
             pass
 
-        return self.doc_name, self.doc_class, self.doc_info
+        return self.doc_name, self.doc_class, self.doc_info, self.doc_title_no
 
 
     def rankDoc(self, dis, department, n):
@@ -143,7 +150,7 @@ if __name__ == '__main__':
     # doc_name, doc_class, doc_info = ranker.rank(dis, department, 3)
     docList = ranker.rankList(dis, department, 3)
     for doc in docList:
-        doc_name, doc_class, doc_info = doc[0],doc[1],doc[2]
+        doc_name, doc_class, doc_info, doc_title_no = doc[0], doc[1], doc[2], doc[3]
         print "患者输入的疾病: %s" % dis
         print "系统推荐医生信息:"
-        print "%s\t%s\t%s" % (doc_name, doc_class, doc_info)
+        print "%s\t%s\t%s\t%s" % (doc_name, doc_class, doc_info, doc_title_no)
