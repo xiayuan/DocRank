@@ -101,33 +101,27 @@ class DoctorRanking(object):
             for e in entity_scores[0:1]:
                 try:
                     doc_rank[doc] = (e[1], int(self.doc_title[doc]))
-                    # print doc, e[0], e[1]
                 except Exception as e:
                     pass
-                
+                # print doc, e[0], e[1]
 
         doc_rank_list = sorted(doc_rank.items(), key=lambda d: (d[1][0], -d[1][1]), reverse=True)
 
         # return the doctor info
         doc_class = department
         try:
+            doc_name = doc_rank_list[topk-1][0]
+            doc_info = self.doc_info_dict[doc_name]
+            doc_title_no = self.doc_title[doc_name]
             doc_score = doc_rank_list[topk-1][1][0]
-            if doc_score > 0.7:
-                doc_name = doc_rank_list[topk-1][0]
-                doc_info = self.doc_info_dict[doc_name]
-                doc_title_no = self.doc_title[doc_name]
-            else:
-                doc_name = ""
-                doc_info = ""
-                doc_title_no = ""
-
         except Exception as e:
             doc_name = ""
             doc_info = ""
             doc_title_no = ""
+            doc_score = 0.0
             pass
 
-        return doc_name, doc_class, doc_info, doc_title_no
+        return doc_name, doc_class, doc_info, doc_title_no, doc_score
 
 
     def rankDoc(self, dis, department, n):
@@ -139,41 +133,41 @@ class DoctorRanking(object):
     def randomDoc(self, dis, department, n):
         rankDocList = []
         for doc in self.class_doc[department][0:n]:
-            rankDocList.append((doc, department, self.doc_info_dict[doc]))
+            print doc
+            rankDocList.append((doc, department, self.doc_info_dict[doc], 0, 0.0))
         return rankDocList
 
     def rankList(self, dis, department, n):
         docList = self.rankDoc(dis, department, n)
-        # print docList
-        if docList[0][0] != "":
-            return "rank", docList
+        if len(docList) > 0:
+            if docList[0][0] != "":
+                return docList
+            else:
+                return self.randomDoc(dis, department, n)
         else:
-            return "default", self.randomDoc(dis, department, n)
+            return self.randomDoc(dis, department, n)
 
 if __name__ == '__main__':
     # dis = sys.argv[1]
     # department = sys.argv[2]
     ranker = DoctorRanking()
-    # dis = "外阴瘙痒"
-    # department = "儿科"
+    dis = "radio:尿急_1,尿频_0,下肢水肿_0,发热_0"
+    department = "肾脏内科"
     # doc_name, doc_class, doc_info = ranker.rank(dis, department, 3)
-    with open('doc_rank_test.txt', 'r') as f:
-        for line in f:
-            _, department, dis = line.strip().split('\t')
-            t, docList = ranker.rankList(dis, department, 1)
-            # print t,docList
-            # print len(docList)
-            try:
-                for doc in docList:
-                    doc_name, doc_class, doc_info = doc[0], doc[1], doc[2]
-                    # print "患者输入的疾病: %s" % dis
-                    # print "系统推荐医生信息:"
-                    # print "%s\t%s\t%s\t%s" % (doc_name, doc_class, doc_info, doc_title_no)
-                    print "%s\t%s\t%s\t%s\t%s" % (t, dis, doc_name, doc_class, doc_info)
-            except:
-                pass
-                # print line
-                # print docList
+    doc_num = 1
+    try:
+        doc_num = len(ranker.class_doc[department])
+    except:
+        pass
+    docList = ranker.rankList(dis, department, doc_num)
+    print len(docList)
+    for doc in docList:
+        # print doc
+        doc_name, doc_class, doc_info, doc_title_no, doc_score = doc[0], doc[1], doc[2], doc[3], doc[4]
+        if doc_name != "":
+            print "患者输入的疾病: %s" % dis
+            print "系统推荐医生信息:"
+            print "%s\t%s\t%s\t%s\t%s" % (doc_name, doc_class, doc_info, doc_title_no, doc_score)
 
     # dis = "牙痛"
     # department = "口腔科"

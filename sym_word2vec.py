@@ -30,7 +30,7 @@ def punc_filter(text):
     string=re.sub("[\u4e00-\u9fa5a-zA-Z0-9]".decode("utf8"), "".decode("utf8"), string)
     return string
 
-
+'''
 #模型的训练
 
 jieba.load_userdict('./symptom_dict_jieba.dict')
@@ -154,4 +154,4 @@ if __name__ == '__main__':
     doc_rank_list = sorted(doc_rank.items(), key=lambda d:d[1], reverse=True)
     for doc, score in doc_rank_list:
         print doc, score
-'''
+
